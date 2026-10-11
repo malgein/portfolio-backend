@@ -25,22 +25,30 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
   .map((origin) => origin.trim())
 
 // Configura CORS antes de registrar las rutas de la API.
-app.use(
-  cors({
-    // Decide dinámicamente si el origen de la petición puede acceder a la API.
-    origin(origin, callback) {
-      // Permite clientes sin Origin, como Postman.
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true)
-      }
+// app.use(
+//   cors({
+//     // Decide dinámicamente si el origen de la petición puede acceder a la API.
+//     origin(origin, callback) {
+//       // Permite clientes sin Origin, como Postman.
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         return callback(null, true)
+//       }
 
-      // Rechaza los orígenes que no estén en la lista permitida.
-      callback(new Error('Origin not allowed by CORS'))
-    },
-    // Permite enviar credenciales, como cookies de sesión, entre orígenes autorizados.
-    credentials: true,
-  })
-)
+//       // Rechaza los orígenes no configurados como una prohibición, no como un fallo interno.
+//       const error = new Error('Origin not allowed by CORS')
+//       error.statusCode = 403
+//       callback(error)
+//     },
+//     // Permite enviar credenciales, como cookies de sesión, entre orígenes autorizados.
+//     credentials: true,
+//   })
+// )
+
+app.use(cors({
+	origin: "https://definitive-website-wilmerdev.vercel.app/",
+	credentials: true
+}))
+
 
 // Convierte cuerpos JSON de hasta 1 MB en objetos disponibles en req.body.
 app.use(express.json({ limit: '1mb' }))

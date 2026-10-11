@@ -19,6 +19,10 @@ Este proyecto requiere Node.js 20.x. En Render, configura el servicio para usar 
 
 Para desplegar en Render, configura **Build Command** como `npm ci` y **Start Command** como `npm start`. Mantén `package-lock.json` versionado; `npm ci` instala exactamente las dependencias fijadas en ese archivo y falla si no coincide con `package.json`.
 
+En **Environment** del servicio Render, configura `CLIENT_URL` con el origen público del frontend, por ejemplo `https://mi-portfolio.vercel.app` (sin ruta ni barra final). Si el frontend tiene más de un dominio válido, sepáralos con comas, por ejemplo `https://mi-portfolio.vercel.app,https://www.mi-portfolio.com`. `CLIENT_URL` no debe ser la URL del backend salvo que el navegador cargue el frontend desde ese mismo dominio. Después de guardar la variable, vuelve a desplegar el servicio. Si falta, la API solo permite `http://localhost:3000`.
+
+Un origen no permitido devuelve HTTP 403 con `Origin not allowed by CORS`; esto indica una discrepancia en `CLIENT_URL`, no un fallo al iniciar el servidor ni al conectar MongoDB.
+
 `GET /api/health` comprueba también que MongoDB responda a un ping. Devuelve HTTP 200 cuando está disponible y HTTP 503 cuando no lo está.
 
 ## Seguridad / autorización
