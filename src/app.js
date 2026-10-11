@@ -44,10 +44,10 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
 //   })
 // )
 
-app.use(cors({
-	origin: "https://definitive-website-wilmerdev.vercel.app/",
-	credentials: true
-}))
+// app.use(cors({
+// 	origin: "https://definitive-website-wilmerdev.vercel.app/",
+// 	credentials: true
+// }))
 
 
 // Convierte cuerpos JSON de hasta 1 MB en objetos disponibles en req.body.
