@@ -35,6 +35,17 @@ export const upload = multer({
   limits: {
     // Limita cada imagen a cinco megabytes.
     fileSize: 5 * 1024 * 1024,
+    // Solo se admite la imagen esperada en cada petición.
+    files: 1,
+    // Limita la cantidad de campos de texto del formulario.
+    fields: 10,
+    // Limita el total de componentes multipart (archivo y campos).
+    parts: 11,
+    // Limita los nombres y valores de los campos de texto.
+    fieldNameSize: 100,
+    fieldSize: 16 * 1024,
+    // Limita la cantidad de cabeceras por parte multipart.
+    headerPairs: 100,
   },
 })
 

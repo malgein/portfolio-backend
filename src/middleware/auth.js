@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken'
 // Importa el modelo con el que se recupera el usuario autenticado.
 import User from '../models/User.js'
+import { getJWTSecret } from '../config/jwtSecret.js'
 
 // Protege una ruta verificando que el cliente haya enviado un token válido.
 export const protect = async (req, res, next) => {
@@ -18,7 +19,7 @@ export const protect = async (req, res, next) => {
     // Extrae el token, omitiendo el prefijo "Bearer ".
     const token = authorization.split(' ')[1]
     // Verifica la firma y decodifica el contenido del JWT.
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const decoded = jwt.verify(token, getJWTSecret())
 
     // Comprueba que el usuario del token todavía existe en la base de datos.
     const user = await User.findById(decoded.id)

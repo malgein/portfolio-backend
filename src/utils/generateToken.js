@@ -1,5 +1,6 @@
 // Importa la librería que crea y firma tokens JWT.
 import jwt from 'jsonwebtoken'
+import { getJWTSecret } from '../config/jwtSecret.js'
 
 // Genera un token con los datos mínimos necesarios para identificar y autorizar al usuario.
 export const generateToken = (user) => {
@@ -11,7 +12,7 @@ export const generateToken = (user) => {
       role: user.role,
     },
     // Usa el secreto privado configurado en el entorno para firmar el token.
-    process.env.JWT_SECRET,
+    getJWTSecret(),
     // Configura metadatos del token.
     {
       // Define la caducidad configurada o siete días por defecto.

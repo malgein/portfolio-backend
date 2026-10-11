@@ -11,7 +11,7 @@ export const connectDB = async () => {
   } catch (error) {
     // Informa del motivo si la conexión no pudo establecerse.
     console.error(`MongoDB connection error: ${error.message}`)
-    // Finaliza el proceso porque la API no puede operar sin base de datos.
-    process.exit(1)
+    // Permite que server.js gestione el fallo de arranque de forma centralizada.
+    throw error
   }
 }

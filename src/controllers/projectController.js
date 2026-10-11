@@ -57,9 +57,9 @@ export const createProject = async (req, res) => {
     // Extrae los campos de texto enviados en el formulario.
     const { name, description, code, image, url } = req.body
 
-    if (!name || !description || !code) {
+    if (!name || !description || !code || typeof url !== 'string' || !url.trim()) {
       return res.status(400).json({
-        message: 'name, description and code are required',
+        message: 'name, description, code and url are required',
       })
     }
 
@@ -92,13 +92,17 @@ export const createProject = async (req, res) => {
       res.status(201).json(project)
     } catch (dbError) {
       // Evita una imagen huérfana cuando no se pudo guardar el proyecto.
-      await deleteCloudinaryImage(uploadedImage.public_id)
+      try {
+        await deleteCloudinaryImage(uploadedImage.public_id)
+      } catch (cleanupError) {
+        console.error('Cloudinary cleanup failed after project creation error:', cleanupError)
+      }
       // Reenvía el error para que lo procese el bloque externo.
       throw dbError
     }
   } catch (error) {
     // Marca cualquier fallo no respondido anteriormente como error interno.
-    res.status(500)
+    res.status(Number.isInteger(error.http_code) ? error.http_code : 500)
     throw error
   }
 }
@@ -141,27 +145,36 @@ export const updateProject = async (req, res) => {
       project.imagePublicId = newUpload.public_id
     }
 
-    // Persiste los cambios y limpia la imagen anterior solo después de guardar con éxito.
+    // Persiste los cambios antes de intentar limpiar la imagen anterior.
     try {
       await project.save()
-
-      // Elimina la imagen antigua cuando fue sustituida por una nueva.
-      if (newUpload && oldPublicId) {
-        await deleteCloudinaryImage(oldPublicId)
-      }
-
-      // Consulta de nuevo el proyecto sin el campo privado imagePublicId.
-      const responseProject = await Project.findById(project._id)
-      // Devuelve la versión pública actualizada del proyecto.
-      res.json(responseProject)
     } catch (dbError) {
       // Elimina la nueva imagen si el guardado no llegó a completarse.
       if (newUpload) {
-        await deleteCloudinaryImage(newUpload.public_id)
+        try {
+          await deleteCloudinaryImage(newUpload.public_id)
+        } catch (cleanupError) {
+          console.error('Cloudinary cleanup failed after project update error:', cleanupError)
+        }
       }
       // Reenvía el error para que lo gestione el bloque externo.
       throw dbError
     }
+
+    // Una falla al limpiar la imagen anterior no debe borrar la nueva imagen
+    // que ya está referenciada por el proyecto guardado.
+    if (newUpload && oldPublicId) {
+      try {
+        await deleteCloudinaryImage(oldPublicId)
+      } catch (cleanupError) {
+        console.error('Cloudinary cleanup failed after project update:', cleanupError)
+      }
+    }
+
+    // Consulta de nuevo el proyecto sin el campo privado imagePublicId.
+    const responseProject = await Project.findById(project._id)
+    // Devuelve la versión pública actualizada del proyecto.
+    res.json(responseProject)
   } catch (error) {
     // Responde 400 si el id recibido no puede convertirse a ObjectId.
     if (error.name === 'CastError') {
@@ -171,7 +184,7 @@ export const updateProject = async (req, res) => {
     }
 
     // Marca cualquier otro error como interno y lo delega al manejador centralizado.
-    res.status(500)
+    res.status(Number.isInteger(error.http_code) ? error.http_code : 500)
     throw error
   }
 }

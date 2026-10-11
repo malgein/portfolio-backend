@@ -13,6 +13,14 @@ API REST para gestionar proyectos personales de mi portafolio.
 - Multer
 - CORS
 
+## Versión de Node.js
+
+Este proyecto requiere Node.js 20.x. En Render, configura el servicio para usar Node 20.
+
+Para desplegar en Render, configura **Build Command** como `npm ci` y **Start Command** como `npm start`. Mantén `package-lock.json` versionado; `npm ci` instala exactamente las dependencias fijadas en ese archivo y falla si no coincide con `package.json`.
+
+`GET /api/health` comprueba también que MongoDB responda a un ping. Devuelve HTTP 200 cuando está disponible y HTTP 503 cuando no lo está.
+
 ## Seguridad / autorización
 
 No existe una ruta pública de registro.
@@ -47,7 +55,13 @@ cp .env.example .env
 
 Completa `.env` con MongoDB, Cloudinary y tus credenciales de administrador.
 
+Al crear un proyecto, `name`, `description`, `code`, `url` y el archivo `image` son obligatorios. `url` debe ser una cadena no vacía; si falta, la API responde HTTP 400 antes de subir la imagen a Cloudinary.
+
 Genera un `JWT_SECRET` largo y aleatorio. No subas `.env` a GitHub.
+
+`JWT_SECRET` debe tener al menos 64 bytes y ser criptográficamente aleatorio. Genera uno con `node -e "console.log(require('node:crypto').randomBytes(64).toString('base64url'))"`. El servidor rechaza secretos cortos o claramente predecibles. Se ha generado un secreto local de producción en `.env.production`, excluido de Git; copia su valor a la variable `JWT_SECRET` del servicio Render y no lo compartas ni lo reutilices en otros entornos.
+
+El endpoint `POST /api/auth/login` permite hasta 10 intentos fallidos por IP cada 15 minutos. Los inicios de sesión correctos no cuentan para el límite.
 
 ## 3. Crear el administrador
 

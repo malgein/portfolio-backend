@@ -1,5 +1,7 @@
 // Importa Express para crear y configurar la aplicación HTTP.
 import express from 'express'
+// Permite comprobar el estado actual de la conexión de Mongoose.
+import mongoose from 'mongoose'
 // Importa el middleware que gestiona las políticas CORS.
 import cors from 'cors'
 // Importa las rutas relacionadas con autenticación y perfil.
@@ -11,6 +13,9 @@ import { errorHandler, notFound } from './middleware/errorHandler.js'
 
 // Crea la instancia principal de la aplicación Express.
 const app = express()
+
+// Render está detrás de un proxy; permite que el limitador identifique la IP cliente.
+app.set('trust proxy', 1)
 
 // Lee los orígenes autorizados o usa el frontend local como valor por defecto.
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
@@ -39,18 +44,28 @@ app.use(
 
 // Convierte cuerpos JSON de hasta 1 MB en objetos disponibles en req.body.
 app.use(express.json({ limit: '1mb' }))
-// Convierte formularios URL-encoded, incluidos valores anidados, en req.body.
-app.use(express.urlencoded({ extended: true }))
-
-// Expone una ruta pública y ligera para comprobar que la API está activa.
-app.get('/api/health', (req, res) => {
-  // Devuelve una respuesta de estado satisfactoria.
-  res.json({
-    // Indica de forma programática que el servicio funciona.
-    ok: true,
-    // Aporta un mensaje legible para humanos.
-    message: 'Portfolio API is running',
+// Convierte formularios URL-encoded con límites de tamaño, cantidad y anidamiento.
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10kb',
+    parameterLimit: 100,
+    depth: 5,
   })
+)
+
+// Comprueba la disponibilidad real de MongoDB, además de la respuesta de Express.
+app.get('/api/health', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1 || !mongoose.connection.db) {
+      return res.status(503).json({ ok: false, database: 'unavailable' })
+    }
+
+    await mongoose.connection.db.admin().ping()
+    return res.json({ ok: true, database: 'available' })
+  } catch {
+    return res.status(503).json({ ok: false, database: 'unavailable' })
+  }
 })
 
 // Monta el conjunto de rutas de autenticación bajo el prefijo indicado.

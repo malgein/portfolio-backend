@@ -21,6 +21,8 @@ import {
 
 // Importa el middleware que exige un JWT válido.
 import { protect } from '../middleware/auth.js'
+// Limita intentos fallidos consecutivos en el endpoint de login.
+import { loginRateLimit } from '../middleware/loginRateLimit.js'
 
 // Crea el enrutador que se montará bajo /api/auth.
 const router = express.Router()
@@ -30,7 +32,7 @@ const router = express.Router()
 // =========================
 
 // Recibe credenciales y devuelve un token para iniciar sesión.
-router.post('/login', login)
+router.post('/login', loginRateLimit, login)
 
 // =========================
 // DATOS DEL USUARIO

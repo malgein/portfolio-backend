@@ -12,9 +12,16 @@ export const errorHandler = (err, req, res, next) => {
   // Registra el error completo en el servidor para facilitar su diagnóstico.
   console.error(err)
 
-  // Convierte los errores propios de Multer, como un archivo demasiado grande, en un 400.
+  // Devuelve 413 para límites de tamaño y cantidad; otros errores Multer son 400.
   if (err.name === 'MulterError') {
-    return res.status(400).json({
+    const payloadLimitCodes = [
+      'LIMIT_FILE_SIZE',
+      'LIMIT_FIELD_VALUE',
+      'LIMIT_PART_COUNT',
+      'LIMIT_FIELD_COUNT',
+    ]
+    const statusCode = payloadLimitCodes.includes(err.code) ? 413 : 400
+    return res.status(statusCode).json({
       message: err.message,
     })
   }
@@ -26,11 +33,23 @@ export const errorHandler = (err, req, res, next) => {
     })
   }
 
-  // Conserva un estado de error ya asignado; si no existe, usa 500.
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode
+  // Conserva el código HTTP que pueda adjuntar Cloudinary u otro proveedor.
+  const providerStatusCode = err.http_code ?? err.statusCode ?? err.status
+  const statusCode = Number.isInteger(providerStatusCode) &&
+    providerStatusCode >= 400 &&
+    providerStatusCode <= 599
+    ? providerStatusCode
+    : res.statusCode === 200
+      ? 500
+      : res.statusCode
+
+  // Evita exponer mensajes internos del proveedor cuando ocurre un error 5xx.
+  const message = statusCode >= 500
+    ? 'Internal server error'
+    : err.message || 'Request failed'
 
   // Envía una respuesta JSON uniforme al cliente.
   res.status(statusCode).json({
-    message: err.message || 'Internal server error',
+    message,
   })
 }
