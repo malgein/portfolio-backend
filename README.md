@@ -1,6 +1,6 @@
 # Portfolio Backend
 
-API REST para gestionar proyectos personales de un portafolio.
+API REST para gestionar proyectos personales de mi portafolio.
 
 ## Tecnologías
 
@@ -185,6 +185,8 @@ Campos de `form-data`:
 - `description`
 - `code`
 - `image` (archivo)
+- `url` 
+
 
 Ejemplo de `code`:
 

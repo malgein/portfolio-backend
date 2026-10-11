@@ -1,53 +1,3 @@
-// import User from '../models/User.js'
-// import { generateToken } from '../utils/generateToken.js'
-
-// export const login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body
-
-//     if (!email || !password) {
-//       return res.status(400).json({
-//         message: 'Email and password are required',
-//       })
-//     }
-
-//     const user = await User.findOne({
-//       email: email.toLowerCase().trim(),
-//     }).select('+password')
-
-//     if (!user || !(await user.comparePassword(password))) {
-//       return res.status(401).json({
-//         message: 'Invalid email or password',
-//       })
-//     }
-
-//     const token = generateToken(user)
-
-//     res.json({
-//       token,
-//       user: {
-//         id: user._id,
-//         name: user.name,
-//         email: user.email,
-//         role: user.role,
-//       },
-//     })
-//   } catch (error) {
-//     res.status(500)
-//     throw error
-//   }
-// }
-
-// export const getMe = async (req, res) => {
-//   res.json({
-//     id: req.user._id,
-//     name: req.user.name,
-//     email: req.user.email,
-//     role: req.user.role,
-//   })
-// }
-
-
 // Importa el modelo con el que se consulta y actualiza al usuario.
 import User from '../models/User.js'
 // Importa la función que firma los JWT de sesión.
@@ -62,6 +12,8 @@ const serializeUser = (user) => ({
 })
 
 // Valida credenciales y crea una sesión basada en un token JWT.
+// endpoint de login
+// endpoint probado exitoso desde insomnia
 export const login = async (req, res) => {
   try {
     // Extrae el correo y contraseña enviados por el cliente.
@@ -106,6 +58,7 @@ export const getMe = async (req, res) => {
 }
 
 // Actualiza los datos permitidos del perfil autenticado.
+// endpoint probado exitoso desde insomnia
 export const updateMe = async (req, res) => {
   try {
     // Extrae los campos que el usuario puede modificar y su contraseña actual de verificación.

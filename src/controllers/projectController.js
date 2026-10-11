@@ -7,6 +7,7 @@ import {
 } from '../utils/cloudinaryUpload.js'
 
 // Obtiene todos los proyectos para la vista pública del portafolio.
+// endpoint probado exitoso desde insomnia
 export const getProjects = async (req, res) => {
   try {
     // Consulta los proyectos y ordena primero los creados más recientemente.
@@ -21,6 +22,7 @@ export const getProjects = async (req, res) => {
 }
 
 // Obtiene un proyecto concreto a partir del id incluido en la URL.
+// endpoint probado exitoso desde insomnia
 export const getProjectById = async (req, res) => {
   try {
     // Busca el documento cuyo identificador coincide con el parámetro de ruta.
@@ -49,10 +51,11 @@ export const getProjectById = async (req, res) => {
 }
 
 // Crea un proyecto nuevo y sube su imagen a Cloudinary.
+// endpoint probado exitoso desde insomnia
 export const createProject = async (req, res) => {
   try {
     // Extrae los campos de texto enviados en el formulario.
-    const { name, description, code } = req.body
+    const { name, description, code, image, url } = req.body
 
     if (!name || !description || !code) {
       return res.status(400).json({
@@ -77,6 +80,10 @@ export const createProject = async (req, res) => {
         name,
         description,
         code,
+        url,
+        // para prueba de endpoints desde insomnia
+        // image: image,
+        // url: url
         image: uploadedImage.secure_url,
         imagePublicId: uploadedImage.public_id,
       })
@@ -97,6 +104,7 @@ export const createProject = async (req, res) => {
 }
 
 // Actualiza los campos enviados de un proyecto y opcionalmente reemplaza su imagen.
+// endpoint probado exitoso desde insomnia, Pendiente de probar reemplazo de url
 export const updateProject = async (req, res) => {
   try {
     // Incluye el id privado de Cloudinary, necesario si se sustituye la imagen.
@@ -111,7 +119,7 @@ export const updateProject = async (req, res) => {
     }
 
     // Extrae los campos editables que pudieron llegar en la petición.
-    const { name, description, code } = req.body
+    const { name, description, code, url } = req.body
 
     // Actualiza el nombre solo si el cliente lo proporcionó.
     if (name !== undefined) project.name = name
@@ -119,6 +127,7 @@ export const updateProject = async (req, res) => {
     if (description !== undefined) project.description = description
     // Actualiza la referencia al código solo si el cliente la proporcionó.
     if (code !== undefined) project.code = code
+    if (url !== undefined) project.url = url
 
     // Inicializa el registro de una posible imagen nueva para poder revertirla.
     let newUpload = null

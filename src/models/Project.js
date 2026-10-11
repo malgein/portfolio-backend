@@ -38,6 +38,7 @@ const projectSchema = new mongoose.Schema(
     // Se guarda para poder borrar/reemplazar la imagen en Cloudinary.
     imagePublicId: {
       type: String,
+      // comentar required para pruebas desde insomnia
       required: true,
       select: false,
     },
